@@ -61,11 +61,29 @@ services:
   jupyter:
     image: apache/spark:3.4.0
     container_name: spark-jupyter
+    user: "0:0"  # Run as root to avoid permission issues
     environment:
       - SPARK_MASTER_URL=spark://spark-master:7077
+      - JUPYTER_ENABLE_LAB=yes
+      - HOME=/opt/spark/work
+      - JUPYTER_RUNTIME_DIR=/opt/spark/work/.jupyter/runtime
+      - JUPYTER_DATA_DIR=/opt/spark/work/.jupyter/data
+      - JUPYTER_CONFIG_DIR=/opt/spark/work/.jupyter/config
+      - PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.5-src.zip
     command: >
-      bash -c "pip install jupyter pyspark notebook &&
-               jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=''"
+      bash -c "mkdir -p /opt/spark/work &&
+               mkdir -p /opt/spark/work/.jupyter/runtime &&
+               mkdir -p /opt/spark/work/.jupyter/data &&
+               mkdir -p /opt/spark/work/.jupyter/config &&
+               chmod -R 777 /opt/spark/work &&
+               cd /opt/spark/work &&
+               pip install jupyter pyspark notebook ipykernel --target /opt/spark/work/packages &&
+               export PYTHONPATH=/opt/spark/work/packages:/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.5-src.zip &&
+               export JUPYTER_RUNTIME_DIR=/opt/spark/work/.jupyter/runtime &&
+               export JUPYTER_DATA_DIR=/opt/spark/work/.jupyter/data &&
+               export JUPYTER_CONFIG_DIR=/opt/spark/work/.jupyter/config &&
+               cd /opt/spark/notebooks &&
+               /opt/spark/work/packages/bin/jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --notebook-dir=/opt/spark/notebooks"
     ports:
       - "8890:8888"  # Jupyter Notebook
     volumes:
