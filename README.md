@@ -1,0 +1,1 @@
+./submit-spark-job.sh /opt/spark/apps/graph_processing.py
