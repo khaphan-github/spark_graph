@@ -15,6 +15,18 @@ services:
       - ./apps:/opt/spark/apps
     networks:
       - spark-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
     command: bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master --port 7077 --webui-port 8080"
 
   spark-worker-1:
@@ -35,6 +47,18 @@ services:
       - spark-master
     networks:
       - spark-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 3G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
     command: bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 --cores 2 --memory 2g --webui-port 8081"
 
   spark-worker-2:
@@ -55,6 +79,18 @@ services:
       - spark-master
     networks:
       - spark-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 3G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
     command: bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 --cores 2 --memory 2g --webui-port 8082"
 
   # Optional: Jupyter notebook for Spark development
@@ -70,6 +106,18 @@ services:
       - JUPYTER_DATA_DIR=/opt/spark/work/.jupyter/data
       - JUPYTER_CONFIG_DIR=/opt/spark/work/.jupyter/config
       - PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.5-src.zip
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '2'
+          memory:  3G
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
     command: >
       bash -c "mkdir -p /opt/spark/work &&
                mkdir -p /opt/spark/work/.jupyter/runtime &&
